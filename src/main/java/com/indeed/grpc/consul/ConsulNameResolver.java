@@ -15,6 +15,7 @@ import io.grpc.internal.SharedResourceHolder;
 import io.grpc.internal.SharedResourceHolder.Resource;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNullableByDefault;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
@@ -55,10 +56,10 @@ public final class ConsulNameResolver extends NameResolver {
     private final TimeUnit retryIntervalTimeUnit;
 
     // pulled the bulk of this from the DnsNameResolver
-    private Listener listener = null;
-    private ScheduledExecutorService timerService = null;
-    private ExecutorService executor = null;
-    private ScheduledFuture<?> resolutionTask = null;
+    private @Nullable Listener listener = null;
+    private @Nullable ScheduledExecutorService timerService = null;
+    private @Nullable ExecutorService executor = null;
+    private @Nullable ScheduledFuture<?> resolutionTask = null;
     private boolean resolving = false;
     private boolean shutdown = false;
 
@@ -150,6 +151,10 @@ public final class ConsulNameResolver extends NameResolver {
         if (shutdown) {
             return;
         }
+
+        checkNotNull(listener, "resolver not started");
+        checkNotNull(timerService, "resolver not started");
+        checkNotNull(executor, "resolver not started");
 
         resolving = true;
         try {
