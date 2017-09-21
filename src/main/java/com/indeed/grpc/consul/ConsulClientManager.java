@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 @ThreadSafe
 public final class ConsulClientManager {
-    private static final ConsulClientManager instance = new ConsulClientManager();
+    private static final ConsulClientManager INSTANCE = new ConsulClientManager();
 
     private final ConcurrentMap<IndexKey, ConsulClient> index = new ConcurrentHashMap<>();
 
@@ -61,7 +61,7 @@ public final class ConsulClientManager {
             final int port,
             @Nullable final TLSConfig tlsConfig
     ) {
-        return instance.index.computeIfAbsent(new IndexKey(host, port, tlsConfig), (key) -> {
+        return INSTANCE.index.computeIfAbsent(new IndexKey(host, port, tlsConfig), (key) -> {
             if (tlsConfig == null) {
                 return new ConsulClient(host, port);
             } else {

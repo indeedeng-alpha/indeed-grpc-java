@@ -8,6 +8,8 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Only testing plaintext because construction of the tls client throws an exception.
+ *
+ * @author jpitz
  */
 public class ConsulClientManagerTest {
     @Test

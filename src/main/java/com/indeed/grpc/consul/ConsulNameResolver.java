@@ -15,7 +15,6 @@ import io.grpc.internal.SharedResourceHolder;
 import io.grpc.internal.SharedResourceHolder.Resource;
 
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNullableByDefault;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;

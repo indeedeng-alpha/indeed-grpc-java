@@ -26,22 +26,21 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
+ * @author jpitz
  */
 @RunWith(JMockit.class)
 public class ConsulNameResolverTest {
-    private static final String serviceName = "MyServiceName";
+    private static final String SERVICE_NAME = "MyServiceName";
 
-    private static final long consulIndex = 1;
-    private static final boolean consulKnownLeader = true;
-    private static final long consulLastContact = 1;
+    private static final long CONSUL_INDEX = 1;
+    private static final boolean CONSUL_KNOWN_LEADER = true;
+    private static final long CONSUL_LAST_CONTACT = 1;
 
     private static <T> Response<T> composeResponse(final T value) {
-        return new Response<T>(value, consulIndex, consulKnownLeader, consulLastContact);
+        return new Response<T>(value, CONSUL_INDEX, CONSUL_KNOWN_LEADER, CONSUL_LAST_CONTACT);
     }
 
     @Mocked
@@ -57,7 +56,7 @@ public class ConsulNameResolverTest {
         resolver = new ConsulNameResolver(
                 catalogClient,
                 keyValueClient,
-                serviceName,
+                SERVICE_NAME,
                 Optional.empty(),
                 GrpcUtil.TIMER_SERVICE,
                 GrpcUtil.SHARED_CHANNEL_EXECUTOR,
@@ -67,7 +66,7 @@ public class ConsulNameResolverTest {
 
     @Test
     public void testGetServiceAuthority() {
-        assertEquals(serviceName, resolver.getServiceAuthority());
+        assertEquals(SERVICE_NAME, resolver.getServiceAuthority());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -80,7 +79,7 @@ public class ConsulNameResolverTest {
         final Response<List<CatalogService>> response = composeResponse(new ArrayList<>());
 
         new Expectations() {{
-            catalogClient.getCatalogService(serviceName, QueryParams.DEFAULT);
+            catalogClient.getCatalogService(SERVICE_NAME, QueryParams.DEFAULT);
             result = response;
             times = 1;
         }};
@@ -105,7 +104,7 @@ public class ConsulNameResolverTest {
         final Response<List<CatalogService>> response = composeResponse(services);
 
         new Expectations() {{
-            catalogClient.getCatalogService(serviceName, QueryParams.DEFAULT);
+            catalogClient.getCatalogService(SERVICE_NAME, QueryParams.DEFAULT);
             result = response;
             times = 1;
         }};
@@ -130,7 +129,7 @@ public class ConsulNameResolverTest {
     @Test
     public void testFailingResolution() throws Exception {
         new Expectations() {{
-            catalogClient.getCatalogService(serviceName, QueryParams.DEFAULT);
+            catalogClient.getCatalogService(SERVICE_NAME, QueryParams.DEFAULT);
             result = new RuntimeException();
             maxTimes = 5;
         }};
