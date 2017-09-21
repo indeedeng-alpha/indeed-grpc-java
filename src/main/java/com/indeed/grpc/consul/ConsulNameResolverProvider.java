@@ -3,7 +3,6 @@ package com.indeed.grpc.consul;
 import com.ecwid.consul.v1.ConsulClient;
 import com.google.common.base.Strings;
 import io.grpc.Attributes;
-import io.grpc.NameResolver;
 import io.grpc.NameResolverProvider;
 import io.grpc.internal.GrpcUtil;
 

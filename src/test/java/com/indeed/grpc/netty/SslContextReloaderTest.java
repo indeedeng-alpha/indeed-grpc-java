@@ -1,6 +1,5 @@
 package com.indeed.grpc.netty;
 
-import com.indeed.util.core.DataLoadingRunnable;
 import com.indeed.util.core.DataLoadingRunnable.ReloadState;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.handler.ssl.ClientAuth;
@@ -9,10 +8,14 @@ import io.netty.handler.ssl.SslContext;
 import org.junit.Test;
 
 import javax.net.ssl.SSLContext;
-
 import java.util.function.Supplier;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  *
