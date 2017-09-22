@@ -8,14 +8,13 @@ import io.netty.handler.ssl.SslContext;
 import org.junit.Test;
 
 import javax.net.ssl.SSLContext;
-import java.util.function.Supplier;
 
+import static com.indeed.grpc.UtilsForTesting.expectNullPointerException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author jpitz
@@ -76,14 +75,5 @@ public class SslContextReloaderTest {
         expectNullPointerException(context::sessionContext);
         expectNullPointerException(() -> context.newEngine(ByteBufAllocator.DEFAULT));
         expectNullPointerException(() -> context.newEngine(ByteBufAllocator.DEFAULT, "localhost", 1234));
-    }
-
-    private void expectNullPointerException(
-            final Supplier<?> supplier
-    ) {
-        try {
-            supplier.get();
-            fail("Expected null pointer exception, but one was not thrown");
-        } catch (final NullPointerException ignored) {}
     }
 }
