@@ -4,18 +4,14 @@ import com.ecwid.consul.v1.agent.AgentClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.indeed.grpc.UtilsForTesting;
-import mockit.Expectations;
 import mockit.Mocked;
 import mockit.NonStrictExpectations;
-import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
