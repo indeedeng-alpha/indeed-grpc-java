@@ -2,6 +2,7 @@ package com.indeed.grpc.consul;
 
 import com.ecwid.consul.v1.agent.AgentClient;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.agent.model.NewService.Check;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
@@ -55,6 +56,7 @@ public final class ConsulServiceRegistrar implements Closeable {
     private final TimeUnit heartbeatPeriodTimeUnit;
     private final List<String> tags;
     private final Set<String> excludedServices;
+    private final List<Check> checks;
 
     private ConsulServiceRegistrar(
             final ScheduledExecutorService scheduledExecutorService,
@@ -62,7 +64,8 @@ public final class ConsulServiceRegistrar implements Closeable {
             final int heartbeatPeriod,
             final TimeUnit heartbeatPeriodTimeUnit,
             final List<String> tags,
-            final Set<String> excludedServices
+            final Set<String> excludedServices,
+            final List<Check> checks
     ) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.agentClient = agentClient;
@@ -70,6 +73,7 @@ public final class ConsulServiceRegistrar implements Closeable {
         this.heartbeatPeriodTimeUnit = heartbeatPeriodTimeUnit;
         this.tags = Lists.newArrayList(tags);
         this.excludedServices = Sets.newHashSet(excludedServices);
+        this.checks = Lists.newArrayList(checks);
     }
 
     /**
@@ -116,6 +120,7 @@ public final class ConsulServiceRegistrar implements Closeable {
         newService.setTags(tags);
         newService.setAddress(advertiseAddress);
         newService.setPort(port);
+        newService.setChecks(checks);
 
         agentClient.agentServiceRegister(newService);
 
@@ -223,6 +228,7 @@ public final class ConsulServiceRegistrar implements Closeable {
         private TimeUnit heartbeatPeriodTimeUnit = TimeUnit.MINUTES;
         private List<String> tags = new ArrayList<>();
         private Set<String> excludedServices = new HashSet<>();
+        private List<Check> checks = new ArrayList<>();
 
         /**
          * @see #newBuilder()
@@ -330,6 +336,26 @@ public final class ConsulServiceRegistrar implements Closeable {
             return this;
         }
 
+        /* checks */
+
+        public List<Check> getChecks() {
+            return checks;
+        }
+
+        public void setChecks(final List<Check> checks) {
+            this.checks = checkNotNull(checks, "checks");
+        }
+
+        public Builder withChecks(final List<Check> checks) {
+            setChecks(checks);
+            return this;
+        }
+
+        public Builder withCheck(final Check check) {
+            checks.add(checkNotNull(check, "check"));
+            return this;
+        }
+
         /* build */
 
         public ConsulServiceRegistrar build() {
@@ -339,7 +365,8 @@ public final class ConsulServiceRegistrar implements Closeable {
                     heartbeatPeriod,
                     heartbeatPeriodTimeUnit,
                     checkNotNull(tags, "tags"),
-                    checkNotNull(excludedServices, "excludedServices")
+                    checkNotNull(excludedServices, "excludedServices"),
+                    checkNotNull(checks, "checks")
             );
         }
     }
