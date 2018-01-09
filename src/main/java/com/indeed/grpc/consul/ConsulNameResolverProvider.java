@@ -23,7 +23,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *     <li>{@code "consul://localhost:8500/MyServiceName#grpc"} (using specified host, port, and tag)</li>
  * </ul>
  *
- * Loosely based off of the {@link io.grpc.internal.DnsNameResolverProvider}.
+ * Loosely based off of the io.grpc.internal.DnsNameResolverProvider.
  *
  * @author jpitz
  */
