@@ -82,7 +82,7 @@ public class SslContextReloader extends DataLoadingRunnable implements Supplier<
     /**
      * Like {@link Supplier}, but can throw an exception.
      *
-     * @param <T>
+     * @param <T> The type of element being returned.
      */
     @FunctionalInterface
     public interface ExceptionalSupplier<T> {
