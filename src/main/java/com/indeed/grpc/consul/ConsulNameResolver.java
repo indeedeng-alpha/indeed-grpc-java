@@ -35,7 +35,7 @@ import static com.google.common.base.Preconditions.checkState;
  * When the Java implementation supports service configurations, we can fetch
  * those from the key-value store.
  *
- * Much of this implementation is based off of the existing {@link io.grpc.internal.DnsNameResolver}
+ * Much of this implementation is based off of the existing io.grpc.internal.DnsNameResolver
  *
  * @see ConsulNameResolverProvider
  *
