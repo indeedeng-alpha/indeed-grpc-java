@@ -205,7 +205,7 @@ public final class ConsulServiceRegistrar implements Closeable {
         hasher.putInt(port);
         hasher.putString(serviceName, Charsets.UTF_8);
 
-        return serviceName + "::" + Long.toHexString(hasher.hash().asLong());
+        return serviceName + ":" + Long.toHexString(hasher.hash().asLong());
     }
     private static final HashFunction SHA256 = Hashing.sha256();
 

@@ -87,7 +87,7 @@ public class ConsulServiceRegistrarTest {
     public void testComputeId() {
         final String id = computeId("localhost", 8080, "service1");
 
-        assertEquals("service1::7538edebdd7fd1db", id);
+        assertEquals("service1:7538edebdd7fd1db", id);
     }
 
     @Test
