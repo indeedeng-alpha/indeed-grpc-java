@@ -143,7 +143,7 @@ public final class ConsulServiceRegistrar implements Closeable {
      * @param id The id of the service.
      */
     private void heartbeat(final String id) {
-        LOGGER.info("Heartbeating service with id [" + id + "] in consul");
+        LOGGER.trace("Heartbeating service with id [" + id + "] in consul");
         try {
             agentClient.agentCheckPass("service:" + id);
         } catch (final Throwable e) {
