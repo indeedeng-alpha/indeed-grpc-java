@@ -9,6 +9,9 @@ import io.grpc.internal.GrpcUtil;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -31,6 +34,23 @@ public final class ConsulNameResolverProvider extends NameResolverProvider {
     private static final String SCHEME = "consul";
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 8500;
+
+    private final ScheduledExecutorService timerService;
+    private final int resolveInterval;
+    private final TimeUnit resolveIntervalTimeUnit;
+
+    @Deprecated
+    public ConsulNameResolverProvider() {
+        this(builder());
+    }
+
+    ConsulNameResolverProvider(
+            final Builder builder
+    ) {
+        this.timerService = builder.timerService;
+        this.resolveInterval = builder.resolveInterval;
+        this.resolveIntervalTimeUnit = builder.resolveIntervalTimeUnit;
+    }
 
     @Nullable
     @Override
@@ -64,8 +84,9 @@ public final class ConsulNameResolverProvider extends NameResolverProvider {
                 consulClient /* KeyValueClient */,
                 serviceName,
                 Optional.ofNullable(tag),
-                GrpcUtil.TIMER_SERVICE,
-                GrpcUtil.SHARED_CHANNEL_EXECUTOR
+                timerService,
+                resolveInterval,
+                resolveIntervalTimeUnit
         );
     }
 
@@ -82,5 +103,60 @@ public final class ConsulNameResolverProvider extends NameResolverProvider {
     @Override
     protected int priority() {
         return 5;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private ScheduledExecutorService timerService = Executors.newSingleThreadScheduledExecutor();
+        private int resolveInterval = 1;
+        private TimeUnit resolveIntervalTimeUnit = TimeUnit.MINUTES;
+
+        private Builder() {}
+
+        public ScheduledExecutorService getTimerService() {
+            return timerService;
+        }
+
+        public void setTimerService(final ScheduledExecutorService timerService) {
+            this.timerService = timerService;
+        }
+
+        public Builder withTimerService(final ScheduledExecutorService timerService) {
+            setTimerService(timerService);
+            return this;
+        }
+
+        public int getResolveInterval() {
+            return resolveInterval;
+        }
+
+        public void setResolveInterval(final int resolveInterval) {
+            this.resolveInterval = resolveInterval;
+        }
+
+        public Builder withResolveInterval(final int resolveInterval) {
+            setResolveInterval(resolveInterval);
+            return this;
+        }
+
+        public TimeUnit getResolveIntervalTimeUnit() {
+            return resolveIntervalTimeUnit;
+        }
+
+        public void setResolveIntervalTimeUnit(final TimeUnit resolveIntervalTimeUnit) {
+            this.resolveIntervalTimeUnit = resolveIntervalTimeUnit;
+        }
+
+        public Builder withResolveIntervalTimeUnit(final TimeUnit resolveIntervalTimeUnit) {
+            setResolveIntervalTimeUnit(resolveIntervalTimeUnit);
+            return this;
+        }
+
+        public ConsulNameResolverProvider build() {
+            return new ConsulNameResolverProvider(this);
+        }
     }
 }
