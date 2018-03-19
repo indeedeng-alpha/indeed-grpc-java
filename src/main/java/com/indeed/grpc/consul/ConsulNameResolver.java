@@ -161,7 +161,10 @@ public final class ConsulNameResolver extends NameResolver {
                 return;
             }
 
-            listener.onError(Status.UNAVAILABLE.withCause(e));
+            // only report error if we have no list
+            if (knownServiceAddresses.isEmpty()) {
+                listener.onError(Status.UNAVAILABLE.withCause(e));
+            }
         }
     }
 
@@ -177,6 +180,6 @@ public final class ConsulNameResolver extends NameResolver {
             resolutionTask = null;
         }
 
-        timerService.shutdown();
+        // intentionally not shutting down the timer service since it's a shared resource.
     }
 }
