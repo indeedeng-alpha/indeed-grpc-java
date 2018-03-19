@@ -59,6 +59,7 @@ public final class ConsulNameResolver extends NameResolver {
 
     private boolean shutdown = false;
 
+    @Nullable
     private Set<HostAndPort> knownServiceAddresses = null;
 
     ConsulNameResolver(
@@ -162,7 +163,7 @@ public final class ConsulNameResolver extends NameResolver {
             }
 
             // only report error if we have no list
-            if (knownServiceAddresses.isEmpty()) {
+            if (knownServiceAddresses == null) {
                 listener.onError(Status.UNAVAILABLE.withCause(e));
             }
         }
