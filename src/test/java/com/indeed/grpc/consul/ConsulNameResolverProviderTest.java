@@ -15,7 +15,7 @@ import static org.junit.Assert.fail;
  * @author jpitz
  */
 public class ConsulNameResolverProviderTest {
-    private static final ConsulNameResolverProvider PROVIDER = new ConsulNameResolverProvider();
+    private static final ConsulNameResolverProvider PROVIDER = ConsulNameResolverProvider.builder().build();
 
     @Test
     public void testGetDefaultScheme() throws Exception {

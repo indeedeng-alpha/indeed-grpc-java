@@ -23,12 +23,16 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * Probably should redo this at some point since any change to resolution
+ * requires retuning some of these values.
+ *
  * @author jpitz
  */
 @RunWith(JMockit.class)
@@ -58,9 +62,8 @@ public class ConsulNameResolverTest {
                 keyValueClient,
                 SERVICE_NAME,
                 Optional.empty(),
-                GrpcUtil.TIMER_SERVICE,
-                GrpcUtil.SHARED_CHANNEL_EXECUTOR,
-                1, TimeUnit.SECONDS
+                Executors.newSingleThreadScheduledExecutor(),
+                2, TimeUnit.SECONDS
         );
     }
 
@@ -85,7 +88,7 @@ public class ConsulNameResolverTest {
         }};
 
         final List<NameResolverEvent<?>> events = runTest(resolver, 1);
-        assertEquals(1, events.size());
+        assertEquals(events.toString(), 1, events.size());
 
         final NameResolverEvent e  = events.get(0);
         assertEquals(NameResolverEventType.ON_ADDRESSES, e.type);
@@ -110,7 +113,7 @@ public class ConsulNameResolverTest {
         }};
 
         final List<NameResolverEvent<?>> events = runTest(resolver, 1);
-        assertEquals(1, events.size());
+        assertEquals(events.toString(), 1, events.size());
 
         final NameResolverEvent e  = events.get(0);
         assertEquals(NameResolverEventType.ON_ADDRESSES, e.type);
@@ -134,11 +137,11 @@ public class ConsulNameResolverTest {
             maxTimes = 5;
         }};
 
-        final List<NameResolverEvent<?>> events = runTest(resolver, 5);
+        final List<NameResolverEvent<?>> events = runTest(resolver, 7);
 
         // allow for an off by 1
-        assertTrue(events.size() >= 4);
-        assertTrue(events.size() <= 5);
+        assertTrue(events.toString(),events.size() >= 4);
+        assertTrue(events.toString(),events.size() <= 5);
 
         for (final NameResolverEvent<?> event : events) {
             assertEquals(NameResolverEventType.ON_ERROR, event.type);
@@ -193,6 +196,14 @@ public class ConsulNameResolverTest {
         ) {
             this.type = type;
             this.payload = payload;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("NameResolverEvent{");
+            sb.append("type=").append(type);
+            sb.append('}');
+            return sb.toString();
         }
     }
 
