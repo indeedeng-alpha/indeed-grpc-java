@@ -16,7 +16,6 @@ import io.grpc.internal.LogExceptionRunnable;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -52,10 +51,12 @@ public final class ConsulNameResolver extends NameResolver {
     private final int resolveInterval;
     private final TimeUnit resolveIntervalTimeUnit;
 
-    // pulled the bulk of this from the DnsNameResolver
-    private @Nullable Listener listener = null;
-    private @Nullable ScheduledFuture<?> resolutionTask = null;
-    private boolean resolving = false;
+    @Nullable
+    private Listener listener = null;
+
+    @Nullable
+    private ScheduledFuture<?> resolutionTask = null;
+
     private boolean shutdown = false;
 
     private Set<HostAndPort> knownServiceAddresses = null;
@@ -100,7 +101,7 @@ public final class ConsulNameResolver extends NameResolver {
     }
 
     @Override
-    public final synchronized void start(final Listener listener) {
+    public synchronized void start(final Listener listener) {
         checkState(this.listener == null, "ConsulNameResolver already started");
         this.listener = checkNotNull(listener, "listener cannot be null");
         this.resolutionTask = timerService.scheduleAtFixedRate(
@@ -110,15 +111,8 @@ public final class ConsulNameResolver extends NameResolver {
     }
 
     @Override
-    public final synchronized void refresh() {
+    public synchronized void refresh() {
         checkState(listener != null, "ConsulNameResolver not yet started");
-    }
-
-    private void resolve() {
-        // we're shutdown, resolving, or have a resolution queued
-        if (shutdown || resolving || resolutionTask != null) {
-            return;
-        }
     }
 
     private synchronized void run() {
@@ -129,7 +123,6 @@ public final class ConsulNameResolver extends NameResolver {
         checkNotNull(listener, "resolver not started");
         checkNotNull(timerService, "resolver not started");
 
-        resolving = true;
         try {
             final Response<List<CatalogService>> response = tag
                     .map(tag -> catalogClient.getCatalogService(serviceName, tag, QueryParams.DEFAULT))
@@ -169,8 +162,6 @@ public final class ConsulNameResolver extends NameResolver {
             }
 
             listener.onError(Status.UNAVAILABLE.withCause(e));
-        } finally {
-            resolving = false;
         }
     }
 
