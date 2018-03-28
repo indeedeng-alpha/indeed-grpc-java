@@ -11,6 +11,7 @@ import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import com.indeed.grpc.ServiceRegistrar;
 import io.grpc.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * @author jpitz
  */
-public final class ConsulServiceRegistrar implements Closeable {
+public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsulServiceRegistrar.class);
 
     private final ConcurrentMap<String, ScheduledFuture> servicePingers = new ConcurrentHashMap<>();
@@ -85,7 +86,11 @@ public final class ConsulServiceRegistrar implements Closeable {
      *
      * @param advertiseAddress The address that the service is advertising on.
      * @param server The server to pull the services and port from.
+     *
+     * @deprecated in favor of custom naming
+     * @see #registerService(String, String, int)
      */
+    @Deprecated
     public void registerServices(final String advertiseAddress, final Server server) {
         final int port = server.getPort();
 
@@ -95,20 +100,15 @@ public final class ConsulServiceRegistrar implements Closeable {
         registerServices(advertiseAddress, port, services);
     }
 
+    @Deprecated
     @VisibleForTesting
     void registerServices(final String advertiseAddress, final int port, final Stream<String> services) {
         services.filter((name) -> !excludedServices.contains(name))
-                .forEach((name) -> registerService(advertiseAddress, port, name));
+                .forEach((name) -> registerService(name, advertiseAddress, port));
     }
 
-    /**
-     * Registers a single service into consul.
-     *
-     * @param advertiseAddress The address the service is listening to.
-     * @param port The port that the service is listening on.
-     * @param serviceName The name of the service.
-     */
-    private void registerService(final String advertiseAddress, final int port, final String serviceName) {
+    @Override
+    public void registerService(final String serviceName, final String advertiseAddress, final int port) {
         checkNotNull(Strings.emptyToNull(advertiseAddress), "advertiseAddress");
         checkNotNull(Strings.emptyToNull(serviceName), "serviceName");
 

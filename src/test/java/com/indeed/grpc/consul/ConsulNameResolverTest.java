@@ -8,9 +8,7 @@ import com.ecwid.consul.v1.kv.KeyValueClient;
 import io.grpc.Attributes;
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.NameResolver;
-import io.grpc.ResolvedServerInfoGroup;
 import io.grpc.Status;
-import io.grpc.internal.GrpcUtil;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -159,11 +157,6 @@ public class ConsulNameResolverTest {
         final List<NameResolverEvent<?>> events = new ArrayList<>();
 
         resolver.start(new NameResolver.Listener() {
-            @Override
-            public void onUpdate(final List<ResolvedServerInfoGroup> list, final Attributes attributes) {
-                throw new UnsupportedOperationException("You should call onAddresses instead of onUpdate");
-            }
-
             @Override
             public void onAddresses(final List<EquivalentAddressGroup> list, final Attributes attributes) {
                 events.add(new NameResolverEvent<>(NameResolverEventType.ON_ADDRESSES, list));
