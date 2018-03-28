@@ -37,12 +37,17 @@ public class ConsulServiceRegistrarTest {
 
     @Before
     public void setup() {
+        final NewService.Check ttlCheck = new NewService.Check();
+        ttlCheck.setTtl("1s");
+        ttlCheck.setDeregisterCriticalServiceAfter("1m");
+
         registrarBuilder = ConsulServiceRegistrar.newBuilder()
                 .withScheduledExecutorService(Executors.newSingleThreadScheduledExecutor())
                 .withAgentClient(agentClient)
                 .withHeartbeatPeriod(1)
                 .withHeartbeatPeriodTimeUnit(TimeUnit.SECONDS)
                 .withTags(Lists.newArrayList("tag1"))
+                .withCheck(ttlCheck)
                 .withTag("tag2")
                 .withExcludedServices(Sets.newHashSet("service1"))
                 .withExcludedService("service2");

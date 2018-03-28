@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 /**
  * Implementation is loosely based on the one in the spring-cloud-consul.
@@ -49,7 +50,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsulServiceRegistrar.class);
 
-    private final ConcurrentMap<String, ScheduledFuture> servicePingers = new ConcurrentHashMap<>();
+    private final Map<String, ScheduledFuture> servicePingers = new ConcurrentHashMap<>();
+    private final Set<String> servicesWithoutPingers = Sets.newConcurrentHashSet();
 
     private final ScheduledExecutorService scheduledExecutorService;
     private final AgentClient agentClient;
@@ -58,6 +60,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
     private final List<String> tags;
     private final Set<String> excludedServices;
     private final List<Check> checks;
+    private final boolean usingTtlCheck;
 
     private ConsulServiceRegistrar(
             final ScheduledExecutorService scheduledExecutorService,
@@ -75,6 +78,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
         this.tags = Lists.newArrayList(tags);
         this.excludedServices = Sets.newHashSet(excludedServices);
         this.checks = Lists.newArrayList(checks);
+        this.usingTtlCheck = checks.stream().anyMatch((check) -> !isNullOrEmpty(check.getTtl()));
     }
 
     /**
@@ -124,13 +128,19 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
 
         agentClient.agentServiceRegister(newService);
 
-        final ScheduledFuture future = scheduledExecutorService.scheduleAtFixedRate(
-                () -> heartbeat(id), heartbeatPeriod, heartbeatPeriod, heartbeatPeriodTimeUnit
-        );
+        // only set up the heartbeat if we're using a TTL check
+        final ScheduledFuture future;
+        if (usingTtlCheck) {
+            future = scheduledExecutorService.scheduleAtFixedRate(
+                    () -> heartbeat(id), heartbeatPeriod, heartbeatPeriod, heartbeatPeriodTimeUnit
+            );
 
-        final ScheduledFuture previous = servicePingers.put(id, future);
-        if (previous != null) {
-            previous.cancel(true);
+            final ScheduledFuture previous = servicePingers.put(id, future);
+            if (previous != null) {
+                previous.cancel(true);
+            }
+        } else {
+            servicesWithoutPingers.add(id);
         }
     }
 
@@ -169,6 +179,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
     @Override
     public void close() throws IOException {
         servicePingers.keySet().forEach(this::deregisterService);
+        servicesWithoutPingers.forEach(this::deregisterService);
     }
 
 
