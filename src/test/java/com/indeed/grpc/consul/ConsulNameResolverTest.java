@@ -86,11 +86,7 @@ public class ConsulNameResolverTest {
         }};
 
         final List<NameResolverEvent<?>> events = runTest(resolver, 1);
-        assertEquals(events.toString(), 1, events.size());
-
-        final NameResolverEvent e  = events.get(0);
-        assertEquals(NameResolverEventType.ON_ADDRESSES, e.type);
-        assertTrue(((List) e.payload).isEmpty());
+        assertEquals(events.toString(), 0, events.size());
     }
 
     @Test

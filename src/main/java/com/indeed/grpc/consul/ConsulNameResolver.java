@@ -12,6 +12,8 @@ import io.grpc.EquivalentAddressGroup;
 import io.grpc.NameResolver;
 import io.grpc.Status;
 import io.grpc.internal.LogExceptionRunnable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
@@ -41,6 +43,8 @@ import static com.google.common.base.Preconditions.checkState;
  * @author jpitz
  */
 public final class ConsulNameResolver extends NameResolver {
+    private final Logger LOGGER = LoggerFactory.getLogger(ConsulNameResolver.class);
+
     private final CatalogClient catalogClient;
     private final KeyValueClient keyValueClient;
 
@@ -142,7 +146,10 @@ public final class ConsulNameResolver extends NameResolver {
                         return HostAndPort.fromParts(host, port);
                     }).collect(Collectors.toSet());
 
-            if (!readAddressList.equals(knownServiceAddresses)) {
+            if (readAddressList.isEmpty()) {
+                LOGGER.warn("Successfully resolved services from consul, but the list was empty. Not updating server lists.");
+
+            } else if (!readAddressList.equals(knownServiceAddresses)) {
                 knownServiceAddresses = readAddressList;
 
                 final List<EquivalentAddressGroup> servers = readAddressList.stream()
@@ -161,6 +168,8 @@ public final class ConsulNameResolver extends NameResolver {
             if (shutdown) {
                 return;
             }
+
+            LOGGER.error("Encountered an exception when attempting to resolve services from consul", e);
 
             // only report error if we have no list
             if (knownServiceAddresses == null) {
