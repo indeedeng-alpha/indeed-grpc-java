@@ -4,8 +4,8 @@ import com.ecwid.consul.v1.agent.AgentClient;
 import com.ecwid.consul.v1.agent.model.NewService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import mockit.Expectations;
 import mockit.Mocked;
-import mockit.NonStrictExpectations;
 import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
@@ -104,7 +104,7 @@ public class ConsulServiceRegistrarTest {
         final String advertiseAddress = "localhost";
         final int port = 8080;
 
-        new NonStrictExpectations() {{
+        new Expectations() {{
             agentClient.agentServiceRegister((NewService) any);
             times = 2;
 

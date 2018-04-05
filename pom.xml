@@ -68,9 +68,10 @@
         </dependency>
 
         <dependency>
-            <groupId>com.googlecode.jmockit</groupId>
+            <groupId>org.jmockit</groupId>
             <artifactId>jmockit</artifactId>
-            <version>1.7</version>
+            <version>1.39</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
