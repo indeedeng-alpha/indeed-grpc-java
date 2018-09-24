@@ -105,15 +105,44 @@ public class ConsulServiceRegistrarTest {
         final int port = 8080;
 
         new Expectations() {{
-            agentClient.agentServiceRegister((NewService) any);
+            agentClient.agentServiceRegister((NewService) any, withNull());
             times = 2;
 
-            agentClient.agentCheckPass(anyString);
+            agentClient.agentCheckPass(anyString, withNull());
             minTimes = 2;
             maxTimes = 10;
 
-            agentClient.agentServiceDeregister(anyString);
+            agentClient.agentServiceDeregister(anyString, withNull());
             times = 2;
+        }};
+
+        registrar.registerServices(advertiseAddress, port, serviceNames.stream());
+
+        Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+
+        registrar.close();
+    }
+
+    @Test
+    public void testRegisterServicesWithToken() throws InterruptedException, IOException {
+        registrarBuilder = registrarBuilder.withConsulToken("my-token");
+        registrar = registrarBuilder.build();
+
+        final List<String> serviceNames = Lists.newArrayList("service3");
+
+        final String advertiseAddress = "localhost";
+        final int port = 8080;
+
+        new Expectations() {{
+            agentClient.agentServiceRegister((NewService) any, "my-token");
+            times = 1;
+
+            agentClient.agentCheckPass(anyString, "my-token");
+            minTimes = 1;
+            maxTimes = 5;
+
+            agentClient.agentServiceDeregister(anyString, "my-token");
+            times = 1;
         }};
 
         registrar.registerServices(advertiseAddress, port, serviceNames.stream());

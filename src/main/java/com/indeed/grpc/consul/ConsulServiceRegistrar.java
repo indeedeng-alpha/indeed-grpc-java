@@ -61,6 +61,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
     private final Set<String> excludedServices;
     private final List<Check> checks;
     private final boolean usingTtlCheck;
+    private final String consulToken;
 
     private ConsulServiceRegistrar(
             final ScheduledExecutorService scheduledExecutorService,
@@ -69,7 +70,8 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
             final TimeUnit heartbeatPeriodTimeUnit,
             final List<String> tags,
             final Set<String> excludedServices,
-            final List<Check> checks
+            final List<Check> checks,
+            final String consulToken
     ) {
         this.scheduledExecutorService = scheduledExecutorService;
         this.agentClient = agentClient;
@@ -79,6 +81,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
         this.excludedServices = Sets.newHashSet(excludedServices);
         this.checks = Lists.newArrayList(checks);
         this.usingTtlCheck = checks.stream().anyMatch((check) -> !isNullOrEmpty(check.getTtl()));
+        this.consulToken = consulToken;
     }
 
     /**
@@ -126,7 +129,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
         newService.setPort(port);
         newService.setChecks(checks);
 
-        agentClient.agentServiceRegister(newService);
+        agentClient.agentServiceRegister(newService, consulToken);
 
         // only set up the heartbeat if we're using a TTL check
         final ScheduledFuture future;
@@ -155,7 +158,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
     private void heartbeat(final String id) {
         LOGGER.trace("Heartbeating service with id [" + id + "] in consul");
         try {
-            agentClient.agentCheckPass("service:" + id);
+            agentClient.agentCheckPass("service:" + id, consulToken);
         } catch (final Throwable e) {
             LOGGER.error("Failed to register service with id [" + id + "] into consul", e);
         }
@@ -168,7 +171,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
      */
     @VisibleForTesting
     void deregisterService(final String id) {
-        agentClient.agentServiceDeregister(id);
+        agentClient.agentServiceDeregister(id, consulToken);
 
         final ScheduledFuture future = servicePingers.remove(id);
         if (future != null) {
@@ -240,6 +243,7 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
         private List<String> tags = new ArrayList<>();
         private Set<String> excludedServices = new HashSet<>();
         private List<Check> checks = new ArrayList<>();
+        private @Nullable String consulToken = null;
 
         /**
          * @see #newBuilder()
@@ -367,6 +371,16 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
             return this;
         }
 
+        /* consul token */
+        public void setConsulToken(final String consulToken) {
+            this.consulToken = checkNotNull(consulToken, "consulToken");
+        }
+
+        public Builder withConsulToken(final String consulToken) {
+            setConsulToken(consulToken);
+            return this;
+        }
+
         /* build */
 
         public ConsulServiceRegistrar build() {
@@ -377,7 +391,8 @@ public final class ConsulServiceRegistrar implements ServiceRegistrar, Closeable
                     heartbeatPeriodTimeUnit,
                     checkNotNull(tags, "tags"),
                     checkNotNull(excludedServices, "excludedServices"),
-                    checkNotNull(checks, "checks")
+                    checkNotNull(checks, "checks"),
+                    consulToken
             );
         }
     }
