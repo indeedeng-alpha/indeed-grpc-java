@@ -86,7 +86,7 @@ public class ConsulNameResolverTest {
         }};
 
         final List<NameResolverEvent<?>> events = runTest(resolver, 1);
-        assertEquals(events.toString(), 0, events.size());
+        assertEquals(events.toString(), 1, events.size());
     }
 
     @Test

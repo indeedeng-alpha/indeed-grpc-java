@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -147,8 +148,9 @@ public final class ConsulNameResolver extends NameResolver {
                     }).collect(Collectors.toSet());
 
             if (readAddressList.isEmpty()) {
-                LOGGER.warn("Successfully resolved services from consul, but the list was empty. Not updating server lists.");
+                LOGGER.warn("Successfully resolved services from consul, but the list was empty.");
 
+                listener.onAddresses(new ArrayList<>(), Attributes.EMPTY);
             } else if (!readAddressList.equals(knownServiceAddresses)) {
                 knownServiceAddresses = readAddressList;
 
